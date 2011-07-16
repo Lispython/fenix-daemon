@@ -4,6 +4,7 @@ import sys
 import os
 import time
 import atexit
+import subprocess
 from signal import SIGTERM
 
 
@@ -108,6 +109,20 @@ class Daemon:
             sys.stderr.write(message % self.pidfile)
             return # not an error in a restart
 
+
+        # Try killing the children processes
+
+        def kill_child_processes(parent_pid, sig=SIGTERM):
+            ps_command = subprocess.Popen("ps -o pid --ppid %d --noheaders" % parent_pid, shell=True, stdout=subprocess.PIPE)
+            ps_output = ps_command.stdout.read()
+            retcode = ps_command.wait()
+            assert retcode == 0, "ps command returned %d" % retcode
+            for pid_str in ps_output.split("\n")[:-1]:
+                os.kill(int(pid_str), sig)
+
+        
+        kill_child_processes(pid)
+        
         # Try killing the daemon process
         try:
             while 1:
@@ -121,6 +136,7 @@ class Daemon:
             else:
                 print str(err)
                 sys.exit(1)
+
 
     def restart(self):
         """
