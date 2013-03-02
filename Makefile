@@ -17,6 +17,6 @@ clean-pyc:
 find-print:
 	grep -r --include=*.py --exclude-dir=venv --exclude=fabfile* --exclude=tests.py --exclude-dir=tests --exclude-dir=commands 'print' ./
 
-mongo-start:
-	rm -rf /var/lib/mongodb/mongod.lock
-	sudo mongod --fork -f /etc/mongodb.conf --auth --logpath /var/log/mongodb/mongodb.log --logappend
+release:
+	python setup.py sdist upload
+	python setup.py bdist_wininst upload
